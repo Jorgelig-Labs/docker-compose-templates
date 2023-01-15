@@ -1,0 +1,56 @@
+version: '3.7'
+
+networks:
+  web:
+      external: true
+  database: {}
+
+services:
+  vtiger:
+    image: kevaljoshi/vtigercrm
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=vtiger
+      - MYSQL_PASSWORD=vtiger
+      - MYSQL_DATABASE=vtiger
+      - VTIGER_HOST=vtiger.jorgeliglabs.com
+      - VTIGER_AUTH_USER=user
+      - VTIGER_AUTH_PASSWORD=hashedpassword
+    networks:
+      - web
+      - database
+    volumes:
+      - vtiger_data:/var/www/html
+    ports:
+      - "9090:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vtiger.rule=Host(`${VTIGER_HOST}`)"
+      - "traefik.http.routers.vtiger.entrypoints=web"
+      - "traefik.http.routers.vtiger.middlewares=vtiger-auth"
+      - "traefik.http.middlewares.vtiger-auth.basicauth.users=${VTIGER_AUTH_USER}:${VTIGER_AUTH_PASSWORD}"
+      - "traefik.http.services.vtiger.loadbalancer.server.port=80"
+      - "caddy.enable=true"
+      - "caddy.http.routers.vtiger.rule=host ${VTIGER_HOST}"
+      - "caddy.http.routers.vtiger.entrypoints=web"
+      - "caddy.http.routers.vtiger.middlewares=basicauth ${VTIGER_AUTH_USER}:${VTIGER_AUTH_PASSWORD}"
+    depends_on:
+      - db
+  db:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_USER=vtiger
+      - MYSQL_PASSWORD=vtiger
+      - MYSQL_DATABASE=vtiger
+    networks:
+      - database
+    volumes:
+      - db_data:/var/lib/mysql
+    labels:
+      - "traefik.enable=false"
+      - "caddy.enable=false"
+
+volumes:
+  vtiger_data:
+  db_data:
