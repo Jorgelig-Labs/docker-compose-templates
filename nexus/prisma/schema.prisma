@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Auth
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams     TeamMember[]
+  projects  ProjectMember[]
+  tasks     Task[]
+  createdPRDs PRD[]
+
+  @@map("users")
+}
+
+// Teams
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  avatar      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members    TeamMember[]
+  roles      Role[]
+  workflows  Workflow[]
+  projects   Project[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+
+  userId    String
+  teamId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+model Role {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  expertise    String[]
+  systemPrompt String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teamId     String
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@map("roles")
+}
+
+// Projects
+model Project {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  repositoryUrl   String?
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  members        ProjectMember[]
+  prds           PRD[]
+  workspaces     Workspace[]
+  tasks           Task[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+
+  userId    String
+  projectId String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+// Workspaces
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  tasks     Task[]
+
+  @@map("workspaces")
+}
+
+// Workflows
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  nodes       Json
+  edges       Json
+  triggers    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  tasks       Task[]
+  executions  WorkflowExecution[]
+
+  @@map("workflows")
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  status      String   @default("pending")
+  input       Json?
+  output      Json?
+  logs        Json?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  tasks       Task[]
+
+  @@map("workflow_executions")
+}
+
+// Tasks
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("todo")
+  priority    String   @default("medium")
+  input       Json?
+  output      Json?
+  logs        Json?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  workflowId  String?
+  workflow    Workflow?  @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  executionId String?
+  execution   WorkflowExecution? @relation(fields: [executionId], references: [id], onDelete: SetNull)
+
+  assigneeId  String?
+  assignee    User?      @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@map("tasks")
+}
+
+// PRD
+model PRD {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  content     Json?
+  status      String   @default("draft")
+  type        String   @default("zero")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parentId    String?
+  parent      PRD?     @relation("PRDUpdates", fields: [parentId], references: [id])
+  updates     PRD[]    @relation("PRDUpdates")
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+
+  @@map("prds")
+}
