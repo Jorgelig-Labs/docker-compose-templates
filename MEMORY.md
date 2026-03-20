@@ -1,7 +1,7 @@
 # MEMORY - Índice de Mi Sistema de Memoria
 
 > Este archivo es el índice central de mi memoria
-> Última actualización: 2026-03-17
+> Última actualización: 2026-03-20
 
 ---
 
@@ -24,7 +24,7 @@ memory/projects/
 ├── nexus.md
 ├── cliphive.md
 ├── dashboard.md
-└── (pendiente: mi-rincon.md, plick.md)
+└── (pendiente: mi-rincon.md, nexus.md)
 ```
 
 ### Áreas (pendiente)
@@ -75,10 +75,11 @@ memory/areas/
 
 | Métrica | Valor |
 |---------|-------|
-| Archivos de memoria | 15+ |
-| Última actualización | 2026-03-18 |
-| Skills disponibles | 64 |
+| Archivos de memoria | 16+ |
+| Última actualización | 2026-03-20 |
+| Skills disponibles | 70+ |
 | Servicios monitoreados | 6 |
+| Proyectos analizados | Plick (2 repos) |
 
 ---
 
