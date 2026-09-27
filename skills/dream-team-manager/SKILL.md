@@ -146,7 +146,7 @@ sessions_spawn({
 
 ```javascript
 // ❌ WRONG - Doing it yourself
-exec("npm run build")
+exec("pnpm build")
 
 // ✅ RIGHT - Delegate to correct squad
 
