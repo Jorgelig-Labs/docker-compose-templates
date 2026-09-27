@@ -1,0 +1,10 @@
+# Política pnpm de Jorgelig Labs: docs/package-manager.md del harness (.agent-os)
+nodeLinker: hoisted
+
+# pnpm 11+ falla el install si una dependencia trae script de build sin decisión explícita.
+allowBuilds:
+  prisma:             true  # CLI + engines de Prisma
+  '@prisma/client':   true  # genera el cliente de Prisma
+  '@prisma/engines':  true  # descarga los engines de la plataforma
+  sharp:              false  # binario vía optionalDependencies (@img/*)
+  unrs-resolver:      false  # binario vía optionalDependencies (napi prebuilt)

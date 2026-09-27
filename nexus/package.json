@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preinstall": "node -e \"const ua=process.env.npm_config_user_agent||'';if(!ua.startsWith('pnpm/')){console.error('Este repo usa pnpm (politica Jorgelig Labs: https://github.com/Jorgelig-Labs/agent-os/blob/main/docs/package-manager.md). Corre: pnpm install');process.exit(1)}\""
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -28,5 +29,6 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "pnpm@12.6.0"
 }
